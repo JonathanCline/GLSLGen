@@ -7,282 +7,6 @@
 
 namespace glsl
 {
-	namespace
-	{
-		constexpr auto TYPE_CATEGORY_FLOAT = std::array
-		{
-			GLSLType::glsl_float,
-			GLSLType::glsl_vec2,
-			GLSLType::glsl_vec3,
-			GLSLType::glsl_vec4,
-		};
-		
-		constexpr auto TYPE_CATEGORY_DOUBLE = std::array
-		{
-			GLSLType::glsl_double,
-			GLSLType::glsl_dvec2,
-			GLSLType::glsl_dvec3,
-			GLSLType::glsl_dvec4,
-		};
-
-		constexpr auto SCALAR_TYPES = std::array
-		{
-			GLSLType::glsl_double,
-			GLSLType::glsl_float,
-			GLSLType::glsl_int,
-		};
-		constexpr auto VECTOR_TYPES = std::array
-		{
-			GLSLType::glsl_vec2,
-			GLSLType::glsl_vec3,
-			GLSLType::glsl_vec4,
-			GLSLType::glsl_dvec2,
-			GLSLType::glsl_dvec3,
-			GLSLType::glsl_dvec4,
-		};
-		constexpr auto MATRIX_TYPES = std::array
-		{
-			GLSLType::glsl_mat4
-		};
-		constexpr auto SAMPLER_TYPES = std::array
-		{
-			GLSLType::glsl_sampler_2D,
-			GLSLType::glsl_sampler_2D_array,
-		};
-	};
-
-
-	bool is_type_in_category(GLSLType _type, GLSLGenType _genType)
-	{
-		HUBRIS_ASSERT(_type != GLSLType::glsl_error);
-
-		switch (_genType)
-		{
-		case GLSLGenType::gen_double:
-			return jc::contains(TYPE_CATEGORY_DOUBLE, _type);
-		case GLSLGenType::gen_float:
-			return jc::contains(TYPE_CATEGORY_FLOAT, _type);
-		default:
-			return false;
-		};
-	};
-
-	bool is_scalar(GLSLType _type)
-	{
-		HUBRIS_ASSERT(_type != GLSLType::glsl_error);
-		return jc::contains(SCALAR_TYPES, _type);
-	};
-	bool is_vector(GLSLType _type)
-	{
-		HUBRIS_ASSERT(_type != GLSLType::glsl_error);
-		return jc::contains(VECTOR_TYPES, _type);
-	};
-	bool is_matrix(GLSLType _type)
-	{
-		HUBRIS_ASSERT(_type != GLSLType::glsl_error);
-		return jc::contains(MATRIX_TYPES, _type);
-	};
-	bool is_sampler(GLSLType _type)
-	{
-		HUBRIS_ASSERT(_type != GLSLType::glsl_error);
-		return jc::contains(SAMPLER_TYPES, _type);
-	};
-
-
-
-	GLSLType element_type(GLSLType _type)
-	{
-		if (is_scalar(_type)) { return GLSLType::glsl_error; };
-
-		if (is_matrix(_type))
-		{
-			// Matrix
-			HUBRIS_ASSERT(_type == GLSLType::glsl_mat4);
-			return GLSLType::glsl_vec4;
-		}
-		else if (is_vector(_type))
-		{
-			// Vector
-			if (is_type_in_category(_type, GLSLGenType::gen_float))
-			{
-				return GLSLType::glsl_float;
-			}
-			else if (is_type_in_category(_type, GLSLGenType::gen_double))
-			{
-				return GLSLType::glsl_double;
-			}
-			else
-			{
-				// ???
-				HUBRIS_ASSERT(false);
-				return {};
-			};
-		}
-		else
-		{
-			// ???
-			HUBRIS_ASSERT(false);
-			return {};
-		};
-	};
-
-
-	bool is_implicitly_convertible_to(GLSLType _fromType, GLSLType _toType)
-	{
-		HUBRIS_ASSERT(_fromType != GLSLType::glsl_error);
-		HUBRIS_ASSERT(_toType != GLSLType::glsl_error);
-
-		if (_fromType == _toType) { return true; };
-
-		if (is_vector(_toType) ^ is_vector(_fromType))
-		{
-			return false;
-		}
-		else
-		{
-			if (vec_size(_toType) != vec_size(_fromType))
-			{
-				return false;
-			};
-		};
-
-		if (is_type_in_category(_toType, GLSLGenType::gen_double))
-		{
-			return is_type_in_category(_fromType, GLSLGenType::gen_float) || _fromType == GLSLType::glsl_int;
-		}
-		else if (is_type_in_category(_toType, GLSLGenType::gen_float))
-		{
-			return _fromType == GLSLType::glsl_int;
-		}
-		else
-		{
-			return false;
-		};
-	};
-	bool is_castable_to(GLSLType _fromType, GLSLType _toType)
-	{
-		HUBRIS_ASSERT(_fromType != GLSLType::glsl_error);
-		HUBRIS_ASSERT(_toType != GLSLType::glsl_error);
-
-		if (_fromType != GLSLType::glsl_void && _toType != GLSLType::glsl_void)
-		{
-			return true;
-		}
-		else
-		{
-			return false;
-		};
-	};
-
-
-};
-
-namespace glsl
-{
-	bool GLSLFunctionParameter::is_generic() const
-	{
-		return this->type_.index() == 1;
-	};
-
-	GLSLType GLSLFunctionParameter::get_type() const
-	{
-		return std::get<0>(this->type_);
-	};
-	GLSLGenType GLSLFunctionParameter::get_generic() const
-	{
-		return std::get<1>(this->type_);
-	};
-
-
-
-
-	bool GLSLFunctionParameter::check_type(GLSLType _type) const
-	{
-		HUBRIS_ASSERT(_type != GLSLType::glsl_error);
-
-		if (this->is_generic())
-		{
-			// Accepts a type within a type category
-			const auto _genType = this->get_generic();
-			return is_type_in_category(_type, _genType);
-		}
-		else
-		{
-			// Accepts only a specific type, if auto then accepts any
-			const auto _requiredType = this->get_type();
-			if (_requiredType == GLSLType::glsl_auto && _type != GLSLType::glsl_void)
-			{
-				// Auto is used and given type is not void, we good.
-				return true;
-			}
-			else
-			{
-				// Direct compare.
-				return _requiredType == _type;
-			};
-		};
-	};
-
-	GLSLFunctionParameter::Convertability GLSLFunctionParameter::convertability_from(GLSLType _fromType) const
-	{
-		HUBRIS_ASSERT(_fromType != GLSLType::glsl_error);
-
-		if (_fromType == GLSLType::glsl_auto)
-		{
-			return Convertability::deduced;
-		};
-
-		if (this->is_generic())
-		{
-			const auto _genType = this->get_generic();
-			if (is_type_in_category(_fromType, _genType))
-			{
-				return Convertability::strict_deduced;
-			}
-			else
-			{
-				// TODO : Check if we can convert into a type in the category
-				return Convertability::none;
-			};
-		}
-		else
-		{
-			const auto _toType = this->get_type();
-
-			// Check for match
-			if (_toType == _fromType)
-			{
-				return Convertability::same;
-			};
-
-			// Check for auto deduction
-			if (_toType == GLSLType::glsl_auto && _fromType != GLSLType::glsl_void)
-			{
-				// Auto is used and given type is not void, we good.
-				return Convertability::deduced;
-			};
-
-			// Non-auto type, check for implicit cast
-			if (is_implicitly_convertible_to(_fromType, _toType))
-			{
-				return Convertability::implicit;
-			};
-
-			// Check for explicit cast
-			if (is_castable_to(_fromType, _toType))
-			{
-				return Convertability::with_cast;
-			};
-
-			// No conversion
-			return Convertability::none;
-		};
-	};
-
-};
-
-namespace glsl
-{
 	inline std::ostream& write(std::ostream& _ostr, std::string_view _fmt)
 	{
 		_ostr.write(_fmt.data(), _fmt.size());
@@ -298,11 +22,6 @@ namespace glsl
 
 
 
-	std::ostream& operator<<(std::ostream& _ostr, const GLSLType& v)
-	{
-		return _ostr << glsl_typename(v);
-	};
-
 
 	void GLSLExpressionDeleter::operator()(GLSLExpression* p) const
 	{
@@ -310,7 +29,7 @@ namespace glsl
 	};
 
 
-	GLSLType GLSLExpression::Parameter::type(const GLSLContext& _context) const
+	GLSLType GLSLArgument::type(const GLSLContext& _context) const
 	{
 		if (this->is_expression())
 		{
@@ -327,7 +46,7 @@ namespace glsl
 	};
 
 
-	bool GLSLExpression::Parameter::generate(std::ostream& _ostr, const GLSLContext& _context) const
+	bool GLSLArgument::generate(std::ostream& _ostr, const GLSLContext& _context) const
 	{
 		if (this->is_expression())
 		{
@@ -421,7 +140,22 @@ namespace glsl
 		};
 	};
 	
-	GLSLExpression::FunctionCall& GLSLExpression::FunctionCall::resolve_params(GLSLContext& _context) &
+
+	GLSLType GLSLExpr_FunctionCall::result_type(const GLSLContext& _context) const
+	{
+		auto& _fn = *_context.find(this->function);
+		auto _paramTypes = this->resolve_parameters(_context);
+		auto _ret = _fn.return_type(_paramTypes);
+
+		if (_ret == GLSLType::glsl_auto)
+		{
+			HUBRIS_BREAK();
+		};
+		HUBRIS_ASSERT(_ret.has_value());
+
+		return _ret.value_or(GLSLType::glsl_error);
+	};
+	GLSLExpr_FunctionCall& GLSLExpr_FunctionCall::resolve_params(GLSLContext& _context) &
 	{
 		// Determine best overload
 		auto& _function = *_context.find(this->function);
@@ -440,13 +174,15 @@ namespace glsl
 			{
 				// Non-implicit match, insert casting step
 				_param = GLSLExpression::make_unique(
-					GLSLExpression::Cast(_bestOverload->params[n].get_type(), std::move(_param))
+					GLSLExpr_Cast(_bestOverload->params[n].get_type(), std::move(_param))
 				);
 			}
 			++n;
 		};
 		return *this;
 	};
+	
+
 
 
 	inline GLSLType binary_operator_result_type(GLSLBinaryOperator _op, GLSLType lhs, GLSLType rhs)
@@ -524,7 +260,7 @@ namespace glsl
 
 
 
-	GLSLType GLSLExpression::BinaryOp::result_type(const GLSLContext& _context) const
+	GLSLType GLSLExpr_BinaryOp::result_type(const GLSLContext& _context) const
 	{
 		const auto _lhsType = this->lhs.type(_context);
 		const auto _rhsType = this->rhs.type(_context);
@@ -569,7 +305,7 @@ namespace glsl
 	};
 
 
-	GLSLType GLSLExpression::Swizzle::result_type(const GLSLContext& _context) const
+	GLSLType GLSLExpr_Swizzle::result_type(const GLSLContext& _context) const
 	{
 		const auto _paramType = this->what.type(_context);
 		const auto _swizzleCount = std::ranges::distance(this->swizzle_.begin(), std::ranges::find(this->swizzle_, 255));
@@ -606,7 +342,7 @@ namespace glsl
 			return GLSLType::glsl_error;
 		};
 	};
-	bool GLSLExpression::Swizzle::check_validity(const GLSLContext& _context) const
+	bool GLSLExpr_Swizzle::check_validity(const GLSLContext& _context) const
 	{
 		if (this->swizzle_.front() == 255)
 		{
@@ -697,7 +433,7 @@ namespace glsl
 		break;
 		case GLSLExpressionType::cast:
 		{
-			auto& _expression = _expr.get<GLSLExpression::Cast>();
+			auto& _expression = _expr.get<GLSLExpr_Cast>();
 			
 			const auto& _toType = _expression.result_type(_context);
 			const auto& _param = _expression.param;
@@ -754,7 +490,7 @@ namespace glsl
 		break;
 		case GLSLExpressionType::function_call:
 		{
-			const auto& _expression = _expr.get<GLSLExpression::FunctionCall>();
+			const auto& _expression = _expr.get<GLSLExpr_FunctionCall>();
 			auto& _function = *_context.find(_expression.function);
 
 			_ostr << _function.name() << '(';
@@ -776,7 +512,7 @@ namespace glsl
 		break;
 		case GLSLExpressionType::binary_op:
 		{
-			const auto& _expression = _expr.get<GLSLExpression::BinaryOp>();
+			const auto& _expression = _expr.get<GLSLExpr_BinaryOp>();
 			const auto& _lhsParam = _expression.lhs;
 			const auto& _rhsParam = _expression.rhs;
 
@@ -816,7 +552,7 @@ namespace glsl
 		break;
 		case GLSLExpressionType::swizzle:
 		{
-			const auto& _expression = _expr.get<GLSLExpression::Swizzle>();
+			const auto& _expression = _expr.get<GLSLExpr_Swizzle>();
 			const auto& _param = _expression.what;
 			const auto _paramType = _param.type(_context);
 			HUBRIS_ASSERT(is_vector(_paramType) || is_matrix(_paramType));

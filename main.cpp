@@ -52,18 +52,6 @@ inline void gen_vertex_shader(GLSLGen& _gen)
 		_main.assign(_context, _context.id("frag_uvs"), _context.id("in_uvs"));
 		_main.assign(_context, _context.id("frag_col"), _context.id("in_col"));
 		_main.assign(_context, _context.id("gl_Position"), _context.id("in_pos"));
-
-		_main.declare(_context, _context.new_variable()->id(),
-			GLSLExpression::make_unique(
-				GLSLExpression::FunctionCall(_context.function_id("cos"))
-				.add_param(
-					GLSLExpression::make_unique(
-						GLSLExpression::Swizzle(_context.id("in_pos"), 0, 1)
-					)
-				)
-			)
-		);
-
 	};
 
 	if (!_params.check())
@@ -99,13 +87,12 @@ inline void gen_fragment_shader(GLSLGen& _gen)
 		auto _main = GLSLFunctionBuilder(_params.main_fn);
 
 		// Get texel color.
-		auto _texel = _context.new_variable("texel",
-			GLSLType::glsl_vec4);
+		auto _texel = _context.new_variable("texel");
 
 		_main.declare(_context, _texel->id(),
 			GLSLExpression::make_unique
 			(
-				GLSLExpression::FunctionCall(_context.function_id("texture"))
+				GLSLExpr_FunctionCall(_context.function_id("texture"))
 				.add_param(_context.id("test_texture"))
 				.add_param(_context.id("frag_uvs"))
 				.resolve_params(_context)

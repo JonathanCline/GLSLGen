@@ -157,173 +157,18 @@ namespace glsl
 
 
 
-	inline void add_builtin_vertex_shader_variables(GLSLContext& _context)
-	{
-		// Inputs
-		{
-			_context.new_variable("gl_VertexID", GLSLType::glsl_int)
-				->set_builtin()
-				.set_inout(GLSLInOut::in);
-		};
-		{
-			_context.new_variable("gl_InstanceID", GLSLType::glsl_int)
-				->set_builtin()
-				.set_inout(GLSLInOut::in);
-		};
+	void add_builtin_vertex_shader_variables(GLSLContext& _context);
+	void add_builtin_fragment_shader_variables(GLSLContext& _context);
 
-		// Outputs
-		{
-			_context.new_variable("gl_Position", GLSLType::glsl_vec4)
-				->set_builtin()
-				.set_inout(GLSLInOut::out);
-		};
-	};
-	inline void add_builtin_fragment_shader_variables(GLSLContext& _context)
-	{
-		// Inputs
-		(*_context.new_variable("gl_FragCoord", GLSLType::glsl_vec4))
-			.set_builtin()
-			.set_inout(GLSLInOut::in);
-		(*_context.new_variable("gl_FrontFacing", GLSLType::glsl_bool))
-			.set_builtin()
-			.set_inout(GLSLInOut::in);
-		(*_context.new_variable("gl_PointCoord", GLSLType::glsl_vec2))
-			.set_builtin()
-			.set_inout(GLSLInOut::in);
+	void add_builtin_functions(GLSLContext& _context);
 
-		// Outputs
-		(*_context.new_variable("gl_FragDepth", GLSLType::glsl_float))
-			.set_builtin()
-			.set_inout(GLSLInOut::out);
-	};
+	bool deduce_auto(GLSLContext& _context, GLSLParams& _params);
 
-	inline void add_builtin_functions(GLSLContext& _context)
-	{
-		(*_context.new_function("sin", GLSLType::glsl_float))
-			.set_builtin()
-			.add_overload(GLSLType::glsl_float, GLSLType::glsl_float);
-		(*_context.new_function("cos", GLSLType::glsl_float))
-			.set_builtin()
-			.add_overload(GLSLType::glsl_float, GLSLType::glsl_float);
-		(*_context.new_function("tan", GLSLType::glsl_float))
-			.set_builtin()
-			.add_overload(GLSLType::glsl_float, GLSLType::glsl_float);
-
-		(*_context.new_function("abs", GLSLType::glsl_float))
-			.set_builtin()
-			.add_overload(GLSLType::glsl_float, GLSLType::glsl_float);
-
-		(*_context.new_function("dot"))
-			.set_builtin()
-			.add_overload(GLSLType::glsl_float, { GLSLGenType::gen_float, GLSLGenType::gen_float })
-			.add_overload(GLSLType::glsl_double, { GLSLGenType::gen_double, GLSLGenType::gen_double });
-
-		(*_context.new_function("texture"))
-			.set_builtin()
-			// texture 2D sampler
-			.add_overload(GLSLType::glsl_vec4, { GLSLType::glsl_sampler_2D, GLSLType::glsl_vec2 })
-			// texture 2D array Sampler
-			.add_overload(GLSLType::glsl_vec4, { GLSLType::glsl_sampler_2D_array, GLSLType::glsl_vec3 });
-
-	};
-
-
-	inline bool deduce_auto(GLSLContext& _context, GLSLParams& _params)
-	{
-		for (auto& _statement : _params.main_fn.body())
-		{
-			if (_context.type(_statement.dest) == GLSLType::glsl_auto)
-			{
-				const auto _resultType = _statement.expr.result_type(_context);
-				_context.set_deduced_type(_statement.dest, _resultType);
-			};
-		};
-		return true;
-	};
-
-	inline void generate_glsl(const GLSLContext& _context, const GLSLParams& _params, std::ostream& _ostr)
-	{
-		_ostr << "#version " << _params.version << " core\n\n";
-
-		{
-			size_t n = 0;
-			for (auto& v : _params.inputs())
-			{
-				_ostr << "in " << v.type() << ' ' << v.name() << "; // id = " << v.id().get() << '\n';
-				++n;
-			};
-			if (n != 0)
-			{
-				_ostr << '\n';
-			};
-		};
-
-		{
-			size_t n = 0;
-			for (auto& v : _params.outputs())
-			{
-				_ostr << "out " << v.type() << ' ' << v.name() << "; // id = " << v.id().get() << '\n';
-				++n;
-			};
-			if (n != 0)
-			{
-				_ostr << '\n';
-			};
-		};
-
-		// Uniforms
-		{
-			for (auto& v : _params.uniforms())
-			{
-				_ostr << "uniform " << v.type() << ' ' << v.name() << ";\n";
-			};
-		};
-
-		_ostr << _params.main_fn.return_type() << ' '
-			<< _params.main_fn.name() << "()\n{\n";
-
-		for (auto& v : _params.main_fn.body())
-		{
-			if (!v.expr.check_validity(_context))
-			{
-				HUBRIS_ASSERT(false);
-			};
-
-			const auto _destID = v.dest;
-			const auto _dest = _params.get_name(_destID);
-
-			const auto& _expr = v.expr;
-
-			switch (v.type)
-			{
-			case GLSLStatementType::assignment:
-				_ostr << '\t' << _context.name(v.dest) << " = ";
-				break;
-			case GLSLStatementType::declaration:
-				_ostr << '\t' << _context.type(v.dest) << ' ' << _context.name(v.dest) << " = ";
-				break;
-			default:
-				abort();
-				break;
-			};
-
-			if (!generate_expression_string(_ostr, _context, v.expr))
-			{
-				abort();
-			};
-
-			_ostr << ";\n";
-		};
-
-		_ostr << "};\n";
-	};
+	void generate_glsl(const GLSLContext& _context, const GLSLParams& _params, std::ostream& _ostr);
 
 
 
-	struct GLSLExpressionBuilder
-	{
 
-	};
 
 
 	struct GLSLFunctionBuilder
@@ -336,7 +181,7 @@ namespace glsl
 			return *this;
 		};
 
-		GLSLFunctionBuilder& assign(GLSLContext& _context, GLSLVariableID _dest, GLSLExpression::Parameter _param)
+		GLSLFunctionBuilder& assign(GLSLContext& _context, GLSLVariableID _dest, GLSLArgument _param)
 		{
 			auto _statement = GLSLStatement(GLSLStatementType::assignment);
 			_statement.dest = _dest;
@@ -355,18 +200,18 @@ namespace glsl
 					_context.set_deduced_type(_dest, _paramType);
 				};
 
-				auto _expr = GLSLExpression::Identity();
+				auto _expr = GLSLExpr_Identity();
 				_expr.param = std::move(_param);
 				_statement.expr = std::move(_expr);
 			}
 			else
 			{
-				_statement.expr = GLSLExpression::Cast(_destType, std::move(_param));
+				_statement.expr = GLSLExpr_Cast(_destType, std::move(_param));
 			};
 
 			return this->append_statement(std::move(_statement));
 		};
-		GLSLFunctionBuilder& declare(GLSLContext& _context, GLSLVariableID _dest, GLSLExpression::Parameter _param)
+		GLSLFunctionBuilder& declare(GLSLContext& _context, GLSLVariableID _dest, GLSLArgument _param)
 		{
 			auto _statement = GLSLStatement(GLSLStatementType::declaration);
 			_statement.dest = _dest;
@@ -384,20 +229,20 @@ namespace glsl
 					_context.set_deduced_type(_dest, _paramType);
 				};
 
-				auto _expr = GLSLExpression::Identity();
+				auto _expr = GLSLExpr_Identity();
 				_expr.param = std::move(_param);
 				_statement.expr = std::move(_expr);
 			}
 			else
 			{
-				_statement.expr = GLSLExpression::Cast(_destType, std::move(_param));
+				_statement.expr = GLSLExpr_Cast(_destType, std::move(_param));
 			};
 
 			return this->append_statement(std::move(_statement));
 		};
 
-		GLSLExpression::UniqueExpression binary_op(GLSLContext& _context, GLSLBinaryOperator _op,
-			GLSLExpression::Parameter lhs, GLSLExpression::Parameter rhs)
+		UniqueExpression binary_op(GLSLContext& _context, GLSLBinaryOperator _op,
+			GLSLArgument lhs, GLSLArgument rhs)
 		{
 			// Check types.
 			const auto _lhsType = lhs.type(_context);
@@ -414,7 +259,7 @@ namespace glsl
 			};
 
 			// Construct the expression
-			return GLSLExpression::make_unique(GLSLExpression::BinaryOp(_op, std::move(lhs), std::move(rhs)));
+			return GLSLExpression::make_unique(GLSLExpr_BinaryOp(_op, std::move(lhs), std::move(rhs)));
 		};
 
 		GLSLFunctionBuilder(GLSLFunction& _function) :

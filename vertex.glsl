@@ -12,5 +12,4 @@ void main()
 	frag_uvs = in_uvs;
 	frag_col = in_col;
 	gl_Position = vec4(in_pos.xyz, 1.0);
-	float _var15 = cos(in_pos.x);
 };
