@@ -4,12 +4,12 @@ project ("GLSLGen")
 
 set(CMAKE_CXX_STANDARD 20)
 
-add_executable (GLSLGen "GLSLGen.cpp" "GLSLGen.hpp")
+add_executable (GLSLGen "main.cpp")
 
 include(tools/cmake/utility.cmake)
 
 target_compile_definitions(${PROJECT_NAME} PRIVATE PROJECT_SOURCE_ROOT="${CMAKE_CURRENT_LIST_DIR}")
-
+target_include_directories(${PROJECT_NAME} PRIVATE source)
 
 ADD_CMAKE_SUBDIRS_HERE()
 ADD_CPP_SOURCES_HERE(${PROJECT_NAME})
