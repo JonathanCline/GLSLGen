@@ -115,7 +115,11 @@ inline void gen_fragment_shader(GLSLGen& _gen)
 int main()
 {
 	{
-		const auto _outPath = fs::path(PROJECT_SOURCE_ROOT "/vertex.glsl");
+		const auto _outPath = fs::path(PROJECT_SOURCE_ROOT "/_out/vertex.glsl");
+		if (!fs::exists(_outPath.parent_path()))
+		{
+			fs::create_directories(_outPath.parent_path());
+		};
 		auto g = GLSLGen();
 		gen_vertex_shader(g);
 		auto f = std::ofstream(_outPath);
@@ -123,7 +127,11 @@ int main()
 	}
 
 	{
-		const auto _outPath = fs::path(PROJECT_SOURCE_ROOT "/fragment.glsl");
+		const auto _outPath = fs::path(PROJECT_SOURCE_ROOT "/_out/fragment.glsl");
+		if (!fs::exists(_outPath.parent_path()))
+		{
+			fs::create_directories(_outPath.parent_path());
+		};
 		auto g = GLSLGen();
 		gen_fragment_shader(g);
 		auto f = std::ofstream(_outPath);

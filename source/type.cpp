@@ -139,11 +139,11 @@ namespace glsl
 
 		if (_fromType == _toType) { return true; };
 
-		if (is_vector(_toType) ^ is_vector(_fromType))
+		if (is_vector(_toType) != is_vector(_fromType))
 		{
 			return false;
 		}
-		else
+		else if (is_vector(_toType) && is_vector(_fromType))
 		{
 			if (vec_size(_toType) != vec_size(_fromType))
 			{
