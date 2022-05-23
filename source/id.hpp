@@ -7,7 +7,6 @@
 
 namespace glsl
 {
-	
 	namespace impl
 	{
 		template <typename TagT>

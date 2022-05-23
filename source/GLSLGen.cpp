@@ -87,15 +87,19 @@ namespace glsl
 		return true;
 	};
 
+
+
+
 	void generate_glsl(const GLSLContext& _context, const GLSLParams& _params, std::ostream& _ostr)
 	{
 		_ostr << "#version " << _params.version << " core\n\n";
 
 		{
 			size_t n = 0;
-			for (auto& v : _params.inputs())
+			for (auto& v : _context.inputs())
 			{
-				_ostr << "in " << v.type() << ' ' << v.name() << "; // id = " << v.id().get() << '\n';
+				v.generate(_ostr);
+				//_ostr << "in " << v.type() << ' ' << v.name() << "; // id = " << v.id().get() << '\n';
 				++n;
 			};
 			if (n != 0)
@@ -106,9 +110,10 @@ namespace glsl
 
 		{
 			size_t n = 0;
-			for (auto& v : _params.outputs())
+			for (auto& v : _context.outputs())
 			{
-				_ostr << "out " << v.type() << ' ' << v.name() << "; // id = " << v.id().get() << '\n';
+				v.generate(_ostr);
+				//_ostr << "out " << v.type() << ' ' << v.name() << "; // id = " << v.id().get() << '\n';
 				++n;
 			};
 			if (n != 0)
@@ -119,9 +124,16 @@ namespace glsl
 
 		// Uniforms
 		{
-			for (auto& v : _params.uniforms())
+			size_t n = 0;
+			for (auto& v : _context.uniforms())
 			{
-				_ostr << "uniform " << v.type() << ' ' << v.name() << ";\n";
+				v.generate(_ostr);
+				//_ostr << "uniform " << v.type() << ' ' << v.name() << ";\n";
+				++n;
+			};
+			if (n != 0)
+			{
+				_ostr << '\n';
 			};
 		};
 
@@ -136,7 +148,7 @@ namespace glsl
 			};
 
 			const auto _destID = v.dest;
-			const auto _dest = _params.get_name(_destID);
+			const auto _dest = _context.name(_destID);
 
 			const auto& _expr = v.expr;
 

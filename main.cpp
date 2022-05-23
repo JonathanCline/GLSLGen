@@ -1,6 +1,10 @@
 #include "GLSLGen.hpp"
 #include "GLSLGenUtil.hpp"
 
+#include "verify/verify.hpp"
+
+#include <sstream>
+
 using namespace glsl;
 
 inline void write_text_file(const fs::path& _path, const std::string_view _data)
@@ -36,7 +40,7 @@ inline void gen_vertex_shader(GLSLGen& _gen)
 	{
 		_context.new_variable("in_pos", GLSLType::glsl_vec3)
 			->set_inout(GLSLInOut::in);
-		_context.new_variable("in_uvs", GLSLType::glsl_vec2)
+		_context.new_variable("in_uvs", GLSLType::glsl_vec3)
 			->set_inout(GLSLInOut::in);
 		_context.new_variable("in_col", GLSLType::glsl_vec4)
 			->set_inout(GLSLInOut::in);
@@ -114,6 +118,9 @@ inline void gen_fragment_shader(GLSLGen& _gen)
 
 int main()
 {
+	auto _vertCode = std::string();
+	auto _fragCode = std::string();
+
 	{
 		const auto _outPath = fs::path(PROJECT_SOURCE_ROOT "/_out/vertex.glsl");
 		if (!fs::exists(_outPath.parent_path()))
@@ -124,7 +131,12 @@ int main()
 		gen_vertex_shader(g);
 		auto f = std::ofstream(_outPath);
 		generate_glsl(g.context, g.params, f);
-	}
+
+		auto s = std::stringstream();
+		generate_glsl(g.context, g.params, s);
+
+		_vertCode = s.str();
+	};
 
 	{
 		const auto _outPath = fs::path(PROJECT_SOURCE_ROOT "/_out/fragment.glsl");
@@ -136,6 +148,18 @@ int main()
 		gen_fragment_shader(g);
 		auto f = std::ofstream(_outPath);
 		generate_glsl(g.context, g.params, f);
+
+		auto s = std::stringstream();
+		generate_glsl(g.context, g.params, s);
+
+		_fragCode = s.str();
+	};
+
+	std::string _error{};
+	if (!glsl::opengl_validate_vertex_fragment_glsl_program(_vertCode, _fragCode, &_error))
+	{
+		std::cout << _error << '\n';
+		return 1;
 	};
 
 	return 0;

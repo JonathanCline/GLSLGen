@@ -6,6 +6,7 @@
 #include "type.hpp"
 
 #include <string>
+#include <iosfwd>
 #include <string_view>
 
 namespace glsl
@@ -106,6 +107,13 @@ namespace glsl
 			this->const_ = _const;
 			return *this;
 		};
+
+
+
+
+		void generate(std::ostream& _ostr) const;
+
+
 
 		GLSLVariable() = default;
 

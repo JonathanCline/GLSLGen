@@ -15,5 +15,5 @@ ADD_CMAKE_SUBDIRS_HERE()
 ADD_CPP_SOURCES_HERE(${PROJECT_NAME})
 
 
-target_link_libraries(${PROJECT_NAME} PUBLIC jclib)
+target_link_libraries(${PROJECT_NAME} PUBLIC jclib glfw glad cppopengl)
 
