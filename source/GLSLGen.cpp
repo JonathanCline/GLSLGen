@@ -61,11 +61,6 @@ namespace glsl
 		(*_context.new_variable("gl_LocalInvocationIndex", GLSLType::glsl_uint))
 			.set_builtin()
 			.set_inout(GLSLInOut::in);
-
-		// Outputs
-		//(*_context.new_variable("gl_FragDepth", GLSLType::glsl_float))
-		//	.set_builtin()
-		//	.set_inout(GLSLInOut::out);
 	};
 
 	void add_builtin_functions(GLSLContext& _context)

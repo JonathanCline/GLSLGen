@@ -56,6 +56,8 @@ inline void gen_vertex_shader(GLSLGen& _gen)
 		_main.assign(_context, _context.id("frag_uvs"), _context.id("in_uvs"));
 		_main.assign(_context, _context.id("frag_col"), _context.id("in_col"));
 		_main.assign(_context, _context.id("gl_Position"), _context.id("in_pos"));
+
+		_main.assign(_context, _context.id("in_pos"), GLSLLiteral(12.0f, 0.0f, 0.0f));
 	};
 
 	if (!_params.check())
@@ -221,5 +223,5 @@ inline int test_vertfrag_shader()
 
 int main()
 {
-	return test_compute_shader();
+	return test_vertfrag_shader();
 };

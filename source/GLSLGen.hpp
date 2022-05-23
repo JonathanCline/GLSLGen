@@ -184,6 +184,11 @@ namespace glsl
 
 		GLSLFunctionBuilder& assign(GLSLContext& _context, GLSLVariableID _dest, GLSLArgument _param)
 		{
+			if (!_context.find(_dest)->can_write())
+			{
+				HUBRIS_ABORT_M("Cannot write to the given destination");
+			};
+
 			auto _statement = GLSLStatement(GLSLStatementType::assignment);
 			_statement.dest = _dest;
 
@@ -214,6 +219,11 @@ namespace glsl
 		};
 		GLSLFunctionBuilder& declare(GLSLContext& _context, GLSLVariableID _dest, GLSLArgument _param)
 		{
+			if (!_context.find(_dest)->can_write())
+			{
+				HUBRIS_ABORT_M("Cannot write to the given destination");
+			};
+			
 			auto _statement = GLSLStatement(GLSLStatementType::declaration);
 			_statement.dest = _dest;
 
