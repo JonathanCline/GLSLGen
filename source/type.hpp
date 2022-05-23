@@ -33,6 +33,29 @@ namespace glsl
 		// int
 		glsl_int,
 
+		// ivec2
+		glsl_ivec2,
+
+		// ivec3
+		glsl_ivec3,
+
+		// ivec4
+		glsl_ivec4,
+
+
+
+		// uint
+		glsl_uint,
+
+		// uvec2
+		glsl_uvec2,
+
+		// uvec3
+		glsl_uvec3,
+		
+		// uvec4
+		glsl_uvec4,
+
 
 
 		// float
@@ -74,6 +97,7 @@ namespace glsl
 		*/
 		glsl_sampler_2D_array,
 
+
 	};
 
 
@@ -84,8 +108,17 @@ namespace glsl
 	*/
 	enum class GLSLGenType
 	{
+		// float, fvec2, fvec3, fvec4
 		gen_float = 1,
-		gen_double = 2,
+
+		// double, dvec2, dvec3, dvec4
+		gen_double,
+
+		// int, ivec2, ivec3, ivec4
+		gen_int,
+
+		// uint, uvec2, uvec3, uvec4
+		gen_uint,
 	};
 
 
@@ -127,6 +160,9 @@ namespace glsl
 	*/
 	GLSLType element_type(GLSLType _type);
 
+
+
+
 	/**
 	 * @brief Gets a string with the name of a glsl type.
 	 * @param _type GLSL type.
@@ -148,6 +184,21 @@ namespace glsl
 
 		case GLSLType::glsl_int:
 			return "int";
+		case GLSLType::glsl_ivec2:
+			return "ivec2";
+		case GLSLType::glsl_ivec3:
+			return "ivec3";
+		case GLSLType::glsl_ivec4:
+			return "ivec4";
+
+		case GLSLType::glsl_uint:
+			return "int";
+		case GLSLType::glsl_uvec2:
+			return "uvec2";
+		case GLSLType::glsl_uvec3:
+			return "uvec3";
+		case GLSLType::glsl_uvec4:
+			return "uvec4";
 
 		case GLSLType::glsl_float:
 			return "float";
@@ -199,6 +250,20 @@ namespace glsl
 		case GLSLType::glsl_vec3:
 			return 3;
 		case GLSLType::glsl_vec4:
+			return 4;
+
+		case GLSLType::glsl_ivec2:
+			return 2;
+		case GLSLType::glsl_ivec3:
+			return 3;
+		case GLSLType::glsl_ivec4:
+			return 4;
+
+		case GLSLType::glsl_uvec2:
+			return 2;
+		case GLSLType::glsl_uvec3:
+			return 3;
+		case GLSLType::glsl_uvec4:
 			return 4;
 
 		case GLSLType::glsl_dvec2:

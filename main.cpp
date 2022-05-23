@@ -116,7 +116,57 @@ inline void gen_fragment_shader(GLSLGen& _gen)
 	deduce_auto(_context, _params);
 };
 
-int main()
+inline void gen_compute_shader(GLSLGen& _gen)
+{
+	auto& _context = _gen.context;
+	auto& _params = _gen.params;
+	_params.version = 330;
+
+	add_builtin_compute_shader_variables(_context);
+	add_builtin_functions(_context);
+
+	{
+		auto _main = GLSLFunctionBuilder(_params.main_fn);
+
+
+
+	};
+
+	if (!_params.check())
+	{
+		abort();
+	};
+
+	deduce_auto(_context, _params);
+};
+
+inline int test_compute_shader()
+{
+	const auto _outPath = fs::path(PROJECT_SOURCE_ROOT "/_out/compute.glsl");
+	if (!fs::exists(_outPath.parent_path()))
+	{
+		fs::create_directories(_outPath.parent_path());
+	};
+	auto g = GLSLGen();
+	gen_compute_shader(g);
+	auto f = std::ofstream(_outPath);
+	generate_glsl(g.context, g.params, f);
+
+	auto ss = std::stringstream();
+	generate_glsl(g.context, g.params, ss);
+	auto s = ss.str();
+
+	std::string _error{};
+	if (!glsl::opengl_validate_compute_shader_glsl(s, &_error))
+	{
+		std::cout << _error << '\n';
+		return 1;
+	};
+
+	return 0;
+};
+
+inline int test_vertfrag_shader()
 {
 	auto _vertCode = std::string();
 	auto _fragCode = std::string();
@@ -163,4 +213,13 @@ int main()
 	};
 
 	return 0;
+};
+
+
+
+
+
+int main()
+{
+	return test_compute_shader();
 };

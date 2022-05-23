@@ -465,13 +465,49 @@ namespace glsl
 				{
 					for (size_t n = _smallerSize; n != _largerSize; ++n)
 					{
+						const auto _fromElementType = element_type(_fromType);
+
 						if (n == 3)
 						{
-							_ostr << ", 1.0";
+							_ostr << ", ";
+							switch (_fromElementType)
+							{
+							case GLSLType::glsl_float: [[fallthrough]];
+							case GLSLType::glsl_double:
+								_ostr << "1.0";
+								break;
+							case GLSLType::glsl_int: [[fallthrough]];
+							case GLSLType::glsl_uint:
+								_ostr << "1";
+								break;
+							case GLSLType::glsl_bool:
+								_ostr << "true";
+								break;
+							default:
+								HUBRIS_ABORT_M("Unexpected element type");
+								break;
+							};
 						}
 						else
 						{
-							_ostr << ", 0.0";
+							_ostr << ", ";
+							switch (_fromElementType)
+							{
+							case GLSLType::glsl_float: [[fallthrough]];
+							case GLSLType::glsl_double:
+								_ostr << "0.0";
+								break;
+							case GLSLType::glsl_int: [[fallthrough]];
+							case GLSLType::glsl_uint:
+								_ostr << "0";
+								break;
+							case GLSLType::glsl_bool:
+								_ostr << "false";
+								break;
+							default:
+								HUBRIS_ABORT_M("Unexpected element type");
+								break;
+							};
 						};
 					};
 				};

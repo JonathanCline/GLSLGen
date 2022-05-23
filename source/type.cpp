@@ -25,25 +25,52 @@ namespace glsl
 			GLSLType::glsl_dvec4,
 		};
 
+		constexpr auto TYPE_CATEGORY_INT = std::array
+		{
+			GLSLType::glsl_int,
+			GLSLType::glsl_ivec2,
+			GLSLType::glsl_ivec3,
+			GLSLType::glsl_ivec4,
+		};
+
+		constexpr auto TYPE_CATEGORY_UINT = std::array
+		{
+			GLSLType::glsl_uint,
+			GLSLType::glsl_uvec2,
+			GLSLType::glsl_uvec3,
+			GLSLType::glsl_uvec4,
+		};
+
 		constexpr auto SCALAR_TYPES = std::array
 		{
 			GLSLType::glsl_double,
 			GLSLType::glsl_float,
+			GLSLType::glsl_bool,
+			GLSLType::glsl_uint,
 			GLSLType::glsl_int,
 		};
+
 		constexpr auto VECTOR_TYPES = std::array
 		{
 			GLSLType::glsl_vec2,
 			GLSLType::glsl_vec3,
 			GLSLType::glsl_vec4,
+			GLSLType::glsl_ivec2,
+			GLSLType::glsl_ivec3,
+			GLSLType::glsl_ivec4,
+			GLSLType::glsl_uvec2,
+			GLSLType::glsl_uvec3,
+			GLSLType::glsl_uvec4,
 			GLSLType::glsl_dvec2,
 			GLSLType::glsl_dvec3,
 			GLSLType::glsl_dvec4,
 		};
+
 		constexpr auto MATRIX_TYPES = std::array
 		{
 			GLSLType::glsl_mat4
 		};
+
 		constexpr auto SAMPLER_TYPES = std::array
 		{
 			GLSLType::glsl_sampler_2D,
@@ -67,6 +94,10 @@ namespace glsl
 			return jc::contains(TYPE_CATEGORY_DOUBLE, _type);
 		case GLSLGenType::gen_float:
 			return jc::contains(TYPE_CATEGORY_FLOAT, _type);
+		case GLSLGenType::gen_int:
+			return jc::contains(TYPE_CATEGORY_INT, _type);
+		case GLSLGenType::gen_uint:
+			return jc::contains(TYPE_CATEGORY_UINT, _type);
 		default:
 			return false;
 		};
@@ -97,7 +128,12 @@ namespace glsl
 
 	GLSLType element_type(GLSLType _type)
 	{
-		if (is_scalar(_type)) { return GLSLType::glsl_error; };
+		HUBRIS_ASSERT(_type != GLSLType::glsl_error);
+
+		if (is_scalar(_type))
+		{ 
+			return GLSLType::glsl_error;
+		};
 
 		if (is_matrix(_type))
 		{
@@ -115,6 +151,14 @@ namespace glsl
 			else if (is_type_in_category(_type, GLSLGenType::gen_double))
 			{
 				return GLSLType::glsl_double;
+			}
+			else if (is_type_in_category(_type, GLSLGenType::gen_int))
+			{
+				return GLSLType::glsl_int;
+			}
+			else if (is_type_in_category(_type, GLSLGenType::gen_uint))
+			{
+				return GLSLType::glsl_uint;
 			}
 			else
 			{
@@ -153,17 +197,29 @@ namespace glsl
 
 		if (is_type_in_category(_toType, GLSLGenType::gen_double))
 		{
-			return is_type_in_category(_fromType, GLSLGenType::gen_float) || _fromType == GLSLType::glsl_int;
+			// int -> double
+			// float -> double
+			return	is_type_in_category(_fromType, GLSLGenType::gen_float) ||
+					is_type_in_category(_fromType, GLSLGenType::gen_int);
 		}
 		else if (is_type_in_category(_toType, GLSLGenType::gen_float))
 		{
-			return _fromType == GLSLType::glsl_int;
+			// int -> float
+			// uint -> float
+			return	is_type_in_category(_fromType, GLSLGenType::gen_int) ||
+					is_type_in_category(_fromType, GLSLGenType::gen_uint);
+		}
+		else if (is_type_in_category(_toType, GLSLGenType::gen_uint)) 
+			// uint -> int
+		{
+			return is_type_in_category(_fromType, GLSLGenType::gen_int);
 		}
 		else
 		{
 			return false;
 		};
 	};
+
 	bool is_castable_to(GLSLType _fromType, GLSLType _toType)
 	{
 		HUBRIS_ASSERT(_fromType != GLSLType::glsl_error);

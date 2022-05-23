@@ -43,6 +43,30 @@ namespace glsl
 			.set_builtin()
 			.set_inout(GLSLInOut::out);
 	};
+	void add_builtin_compute_shader_variables(GLSLContext& _context)
+	{
+		// Inputs
+		(*_context.new_variable("gl_NumWorkGroups", GLSLType::glsl_uvec3))
+			.set_builtin()
+			.set_inout(GLSLInOut::in);
+		(*_context.new_variable("gl_WorkGroupID", GLSLType::glsl_uvec3))
+			.set_builtin()
+			.set_inout(GLSLInOut::in);
+		(*_context.new_variable("gl_LocalInvocationID", GLSLType::glsl_uvec3))
+			.set_builtin()
+			.set_inout(GLSLInOut::in);
+		(*_context.new_variable("gl_GlobalInvocationID", GLSLType::glsl_uvec3))
+			.set_builtin()
+			.set_inout(GLSLInOut::in);
+		(*_context.new_variable("gl_LocalInvocationIndex", GLSLType::glsl_uint))
+			.set_builtin()
+			.set_inout(GLSLInOut::in);
+
+		// Outputs
+		//(*_context.new_variable("gl_FragDepth", GLSLType::glsl_float))
+		//	.set_builtin()
+		//	.set_inout(GLSLInOut::out);
+	};
 
 	void add_builtin_functions(GLSLContext& _context)
 	{
@@ -99,7 +123,6 @@ namespace glsl
 			for (auto& v : _context.inputs())
 			{
 				v.generate(_ostr);
-				//_ostr << "in " << v.type() << ' ' << v.name() << "; // id = " << v.id().get() << '\n';
 				++n;
 			};
 			if (n != 0)
@@ -113,7 +136,6 @@ namespace glsl
 			for (auto& v : _context.outputs())
 			{
 				v.generate(_ostr);
-				//_ostr << "out " << v.type() << ' ' << v.name() << "; // id = " << v.id().get() << '\n';
 				++n;
 			};
 			if (n != 0)
@@ -128,7 +150,6 @@ namespace glsl
 			for (auto& v : _context.uniforms())
 			{
 				v.generate(_ostr);
-				//_ostr << "uniform " << v.type() << ' ' << v.name() << ";\n";
 				++n;
 			};
 			if (n != 0)

@@ -159,6 +159,7 @@ namespace glsl
 
 	void add_builtin_vertex_shader_variables(GLSLContext& _context);
 	void add_builtin_fragment_shader_variables(GLSLContext& _context);
+	void add_builtin_compute_shader_variables(GLSLContext& _context);
 
 	void add_builtin_functions(GLSLContext& _context);
 

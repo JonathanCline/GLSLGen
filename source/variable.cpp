@@ -14,6 +14,9 @@ namespace glsl
 			return "out";
 		case GLSLInOut::local:
 			return "";
+		default:
+			HUBRIS_ABORT_M("Unexpected case");
+			break;
 		};
 	};
 

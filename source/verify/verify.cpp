@@ -62,6 +62,12 @@ namespace glsl
 	{
 		return validate_shader_glsl(_source, gl::shader_type::fragment, _errorOut);
 	};
+	bool opengl_validate_compute_shader_glsl(std::string_view _source, std::string* _errorOut)
+	{
+		return validate_shader_glsl(_source, gl::shader_type::compute, _errorOut);
+	};
+
+
 
 	bool opengl_validate_vertex_fragment_glsl_program(std::string_view _vertSource, std::string_view _fragSource, std::string* _errorOut)
 	{
